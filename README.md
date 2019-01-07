@@ -2,7 +2,8 @@
 
 nosql for android demo
 
-一个把 java 对象保存在文件中的库, 百万数据时时获取, <1ms  
+一个把 java 对象保存在文件中的库  
+百万数据时时获取 <1ms  
   
 依赖库:  
 nosql 数据库 [tokyocabinet](https://github.com/maiha/tokyocabinet)  
