@@ -6,9 +6,11 @@ nosql for android demo
 百万数据时,获取并转成java对象 ~0.3ms 
   
 依赖库:  
-nosql 数据库 [tokyocabinet](https://github.com/maiha/tokyocabinet)  
+nosql 数据库 [leveldb](https://github.com/google/leveldb)  
+压缩库 [snappy](https://github.com/google/snappy)  
 java 快速序列化库 [fast-serialization](https://github.com/RuedigerMoeller/fast-serialization)  
-c++库 [boost](https://www.boost.org/)
+c++库 [boost](https://www.boost.org/)  
+
 
 编译环境:  
 [crystax ndk](https://github.com/crystax/android-platform-ndk)

@@ -53,10 +53,10 @@ public class MainActivity extends AppCompatActivity {
         }
         // 为 UserBean 的列表创建一个 数据库对象
         unqliteArray = new UnqliteArray();
-        unqliteArray.open(activity.getExternalFilesDir("database").getAbsolutePath() + File.separator + "Array100w.db");
-
-        myAdapter.setUnqliteArray(unqliteArray);
         executorService.execute(() -> {
+            unqliteArray.open(activity.getExternalFilesDir("database").getAbsolutePath() + File.separator + "Array100w.db");
+
+            myAdapter.setUnqliteArray(unqliteArray);
             long time = System.currentTimeMillis();
             //恢复保存的数据, 需要保存的话,切勿调用clear()方法
             unqliteArray.restore();
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             //保存,下次读取
-//            unqliteArray.save();
+            unqliteArray.save();
             Log.i("unqlite", "插入 " + TestCount + " 条数据,用时: " + (System.currentTimeMillis() - time) + " ms");
             runOnUiThread(() -> {
                 int position = (int) (unqliteArray.size() / 2);
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         if (unqliteArray != null) {
             //清理数据,需要保存得话就不调用
-            unqliteArray.clear();
+//            unqliteArray.clear();
             // 关闭
             unqliteArray.close();
         }
