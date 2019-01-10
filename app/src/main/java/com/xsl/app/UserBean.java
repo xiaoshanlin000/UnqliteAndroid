@@ -5,7 +5,6 @@ import java.io.Serializable;
 public class UserBean implements Serializable {
     private String name;
     private int age;
-    private boolean student;
 
 
     public String getName() {
@@ -26,12 +25,4 @@ public class UserBean implements Serializable {
         return this;
     }
 
-    public boolean isStudent() {
-        return student;
-    }
-
-    public UserBean setStudent(boolean student) {
-        this.student = student;
-        return this;
-    }
 }

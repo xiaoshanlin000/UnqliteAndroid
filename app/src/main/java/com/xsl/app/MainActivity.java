@@ -1,5 +1,6 @@
 package com.xsl.app;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -16,8 +17,7 @@ import android.widget.TextView;
 import com.xsl.unqlite.UnqliteArray;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,8 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private UnqliteArray unqliteArray;
     private Activity activity;
     private MyAdapter myAdapter;
-
-    List<UserBean> userBeans = new ArrayList<UserBean>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         // 为 UserBean 的列表创建一个 数据库对象
         unqliteArray = new UnqliteArray();
         executorService.execute(() -> {
-            unqliteArray.open(activity.getExternalFilesDir("database").getAbsolutePath() + File.separator + "Array100w.db");
+            unqliteArray.open(Objects.requireNonNull(activity.getExternalFilesDir("database")).getAbsolutePath() + File.separator + "Array100w.db");
 
             myAdapter.setUnqliteArray(unqliteArray);
             long time = System.currentTimeMillis();
@@ -66,10 +64,9 @@ public class MainActivity extends AppCompatActivity {
                     UserBean userBean = new UserBean();
                     userBean.setName((i + 1) + ",编号:" + (i));
                     userBean.setAge(25 + i % 10);
-                    userBean.setStudent(i % 10 == 0);
                     unqliteArray.add(userBean);
                     if (i % 10000 == 0) {
-                        runOnUiThread(() -> recycler.getAdapter().notifyDataSetChanged());
+                        runOnUiThread(() -> Objects.requireNonNull(recycler.getAdapter()).notifyDataSetChanged());
                     }
                 }
             }
@@ -77,12 +74,15 @@ public class MainActivity extends AppCompatActivity {
             unqliteArray.save();
             Log.i("unqlite", "插入 " + TestCount + " 条数据,用时: " + (System.currentTimeMillis() - time) + " ms");
             runOnUiThread(() -> {
-                int position = (int) (unqliteArray.size() / 2);
-                recycler.getAdapter().notifyDataSetChanged();
+                int position = unqliteArray.size() / 2;
+                Objects.requireNonNull(recycler.getAdapter()).notifyDataSetChanged();
                 recycler.scrollToPosition(position);
                 LinearLayoutManager mLayoutManager =
                         (LinearLayoutManager) recycler.getLayoutManager();
-                mLayoutManager.scrollToPositionWithOffset(position, 0);
+                if (mLayoutManager != null) {
+                    mLayoutManager.scrollToPositionWithOffset(position, 0);
+                }
+
             });
         });
     }
@@ -118,27 +118,26 @@ public class MainActivity extends AppCompatActivity {
 
     public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
 
-        private final Activity activity;
         private final LayoutInflater layoutInflater;
         private UnqliteArray unqliteArray;
 
-        public MyAdapter(Activity activity) {
-            this.activity = activity;
+        MyAdapter(Activity activity) {
             layoutInflater = LayoutInflater.from(activity);
         }
 
-        public MyAdapter setUnqliteArray(UnqliteArray unqliteArray) {
+        void setUnqliteArray(UnqliteArray unqliteArray) {
             this.unqliteArray = unqliteArray;
-            return this;
         }
 
         @NonNull
         @Override
         public MyViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+            @SuppressLint("InflateParams")
             View inflate = layoutInflater.inflate(R.layout.list_user, null);
             return new MyViewHolder(inflate);
         }
 
+        @SuppressLint("SetTextI18n")
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
             long time = System.nanoTime();
@@ -155,15 +154,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return unqliteArray == null ? 0 : (int) unqliteArray.size();
+            return unqliteArray == null ? 0 : unqliteArray.size();
         }
     }
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public final TextView nameText;
-        public final TextView ageText;
+    class MyViewHolder extends RecyclerView.ViewHolder {
+        final TextView nameText;
+        final TextView ageText;
 
-        public MyViewHolder(@NonNull View itemView) {
+        MyViewHolder(@NonNull View itemView) {
             super(itemView);
             nameText = itemView.findViewById(R.id.name);
             ageText = itemView.findViewById(R.id.age);
