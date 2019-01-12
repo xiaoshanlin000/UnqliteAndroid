@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                     userBean.setAge(25 + i % 10);
                     unqliteArray.add(userBean);
                     if (i % 10000 == 0) {
-                        runOnUiThread(() -> Objects.requireNonNull(recycler.getAdapter()).notifyDataSetChanged());
+                        runOnUiThread(() -> Objects.requireNonNull(myAdapter).notifyDataChanged());
                     }
                 }
             }
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             Log.i("unqlite", "插入 " + TestCount + " 条数据,用时: " + (System.currentTimeMillis() - time) + " ms");
             runOnUiThread(() -> {
                 int position = unqliteArray.size() / 2;
-                Objects.requireNonNull(recycler.getAdapter()).notifyDataSetChanged();
+                Objects.requireNonNull(myAdapter).notifyDataChanged();
                 recycler.scrollToPosition(position);
                 LinearLayoutManager mLayoutManager =
                         (LinearLayoutManager) recycler.getLayoutManager();
@@ -120,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         private final LayoutInflater layoutInflater;
         private UnqliteArray unqliteArray;
+        AtomicInteger count = new AtomicInteger(0);
 
         MyAdapter(Activity activity) {
             layoutInflater = LayoutInflater.from(activity);
@@ -141,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
             long time = System.nanoTime();
-            UserBean userBean = (UserBean) unqliteArray.get(i);
+            UserBean userBean = unqliteArray.get(i);
             Log.i("unqlite", "加载用时:" + ((System.nanoTime() - time) / 1000) + "微秒");
             if (userBean != null) {
                 myViewHolder.nameText.setText(userBean.getName());
@@ -154,7 +156,20 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public int getItemCount() {
-            return unqliteArray == null ? 0 : unqliteArray.size();
+            return count.get();
+        }
+
+        public void notifyDataChanged() {
+            if (unqliteArray != null) {
+                int c = count.get();
+                int size = unqliteArray.size();
+                count.set(size);
+                if (c < size) {
+                    this.notifyItemRangeChanged(c, size - c);
+                } else if (c > size) {
+                    this.notifyDataSetChanged();
+                }
+            }
         }
     }
 
